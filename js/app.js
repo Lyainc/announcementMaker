@@ -138,10 +138,10 @@ const App = {
             if (text.trim()) {
                 const mode = this.detectMode(text);
                 this.showCurrentMode(mode);
-            } else {
+            } else if (this.elements.modeIndicator) {
                 this.elements.modeIndicator.classList.add('hidden');
             }
-        }, 150);
+        }, 300);
     },
 
     /**

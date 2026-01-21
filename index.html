@@ -31,12 +31,12 @@
             <div class="editor-section">
                 <div class="panel input-panel">
                     <div class="panel-header">
-                        <h2>원본 입력</h2>
+                        <h2>입력 <span class="mode-indicator hidden" id="mode-indicator"></span></h2>
                         <span class="char-count" id="input-count">0자</span>
                     </div>
                     <textarea
                         id="input-text"
-                        placeholder="인사팀에서 작성한 원본 공지 내용을 붙여넣으세요..."
+                        placeholder="공지 내용을 붙여넣거나, 원하는 공지의 목적/내용을 간단히 입력하세요..."
                     ></textarea>
                     <div class="additional-input">
                         <label for="additional-instructions">
@@ -76,12 +76,12 @@
 
             <div class="action-bar">
                 <button id="convert-btn" class="btn btn-primary btn-large">
-                    <span class="btn-text">변환하기</span>
+                    <span class="btn-text">실행</span>
                     <span class="btn-loading hidden">
                         <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
                         </svg>
-                        변환 중...
+                        처리 중...
                     </span>
                 </button>
                 <button id="copy-btn" class="btn btn-secondary btn-large" disabled>

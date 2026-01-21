@@ -8,40 +8,61 @@ const API = {
 
     // 프롬프트 파일 캐시
     _promptCache: {
-        rulebook: null
+        rulebook: null,
+        generator: null
     },
 
     /**
      * 프롬프트 파일 로드
      */
     async loadPrompts() {
+        const loads = [];
+
         if (!this._promptCache.rulebook) {
-            const rulebookRes = await fetch('prompts/rulebook.md');
-
-            if (!rulebookRes.ok) {
-                throw new Error('프롬프트 파일을 불러올 수 없습니다.');
-            }
-
-            this._promptCache.rulebook = await rulebookRes.text();
+            loads.push(
+                fetch('prompts/rulebook.md')
+                    .then(res => res.ok ? res.text() : Promise.reject(new Error('변환 프롬프트 파일을 불러올 수 없습니다.')))
+                    .then(text => this._promptCache.rulebook = text)
+            );
         }
 
+        if (!this._promptCache.generator) {
+            loads.push(
+                fetch('prompts/generator.md')
+                    .then(res => res.ok ? res.text() : Promise.reject(new Error('생성 프롬프트 파일을 불러올 수 없습니다.')))
+                    .then(text => this._promptCache.generator = text)
+            );
+        }
+
+        await Promise.all(loads);
         return this._promptCache;
     },
 
     /**
-     * 공지 변환 요청
+     * 공지 처리 요청 (변환 또는 생성)
+     * @param {string} inputText - 입력 텍스트
+     * @param {'convert' | 'generate'} mode - 처리 모드
+     * @param {string} additionalInstructions - 추가 요청사항
      */
-    async convertAnnouncement(inputText, additionalInstructions = '') {
+    async processAnnouncement(inputText, mode, additionalInstructions = '') {
         const apiKey = Config.getApiKey();
         const model = Config.getModel();
 
         if (!inputText || !inputText.trim()) {
-            throw new Error('변환할 내용을 입력해주세요.');
+            throw new Error('내용을 입력해주세요.');
         }
 
         // 프롬프트 로드
         const prompts = await this.loadPrompts();
-        const systemPrompt = prompts.rulebook;
+
+        // 모드별 프롬프트 선택
+        const systemPrompt = mode === 'generate'
+            ? prompts.generator
+            : prompts.rulebook;
+
+        const userPrompt = mode === 'generate'
+            ? `다음 내용을 바탕으로 Slack 전사 공지를 작성해주세요. 완성된 공지만 출력하고, 설명이나 부연은 포함하지 마세요.${additionalInstructions ? `\n\n[추가 요청사항]\n${additionalInstructions}` : ''}\n\n---\n\n${inputText}`
+            : `다음 공지를 Slack 전사 공지 채널에 적합한 형태로 변환해주세요. 변환된 공지만 출력하고, 설명이나 부연은 포함하지 마세요.${additionalInstructions ? `\n\n[추가 요청사항]\n${additionalInstructions}` : ''}\n\n---\n\n${inputText}`;
 
         // API 요청
         const response = await fetch(this.ENDPOINT, {
@@ -66,11 +87,7 @@ const API = {
                 messages: [
                     {
                         role: 'user',
-                        content: `다음 공지를 Slack 전사 공지 채널에 적합한 형태로 변환해주세요. 변환된 공지만 출력하고, 설명이나 부연은 포함하지 마세요.${additionalInstructions ? `\n\n[추가 요청사항]\n${additionalInstructions}` : ''}
-
----
-
-${inputText}`
+                        content: userPrompt
                     }
                 ]
             })

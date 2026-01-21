@@ -8,6 +8,19 @@
 </head>
 <body>
     <div class="container">
+        <!-- Security Notice Banner -->
+        <div class="security-banner" id="security-banner">
+            <div class="security-banner-content">
+                <span class="security-icon">⚠️</span>
+                <div class="security-text">
+                    <strong>보안 안내</strong>: 이 앱은 브라우저에서 직접 Claude API를 호출합니다.
+                    <a href="https://console.anthropic.com/settings/limits" target="_blank" rel="noopener">Anthropic Console</a>에서
+                    <strong>Spend Limit</strong>을 설정하여 비용을 보호하세요.
+                </div>
+                <button class="security-dismiss" onclick="dismissSecurityBanner()" aria-label="닫기">&times;</button>
+            </div>
+        </div>
+
         <header>
             <h1>Slack 공지 변환기</h1>
             <p class="subtitle">인사팀 정책/안내사항을 Slack 전사 공지용으로 변환</p>
@@ -89,5 +102,23 @@
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script src="js/app.js"></script>
+    <script>
+        // Security banner dismiss handler
+        function dismissSecurityBanner() {
+            const banner = document.getElementById('security-banner');
+            if (banner) {
+                banner.style.display = 'none';
+                sessionStorage.setItem('security-banner-dismissed', 'true');
+            }
+        }
+
+        // Check if banner was dismissed in this session
+        document.addEventListener('DOMContentLoaded', function() {
+            if (sessionStorage.getItem('security-banner-dismissed') === 'true') {
+                const banner = document.getElementById('security-banner');
+                if (banner) banner.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

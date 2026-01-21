@@ -8,24 +8,6 @@
 - **API**: Anthropic Claude API (브라우저에서 직접 호출)
 - **배포**: 정적 파일 호스팅 (GitHub Pages 등)
 
-## 프로젝트 구조
-
-```
-/
-├── index.html          # 메인 HTML (SPA 엔트리포인트)
-├── css/
-│   └── style.css       # Slack 브랜드 컬러 기반 스타일
-├── js/
-│   ├── env.js          # API 키 설정 (gitignored)
-│   ├── env.example.js  # env.js 템플릿
-│   ├── config.js       # 앱 설정 (모델 선택 등)
-│   ├── api.js          # Claude API 통신 모듈
-│   └── app.js          # 메인 앱 로직, 이벤트 핸들러
-└── prompts/
-    ├── rulebook.md     # 변환 규칙 및 예시 (시스템 프롬프트)
-    └── reference.md    # 실제 공지 샘플 (참고용, API 미사용)
-```
-
 ## 핵심 파일 설명
 
 | 파일 | 역할 |
@@ -74,6 +56,57 @@ npx serve .
 ## 보안 고려사항
 
 - API 키는 클라이언트에서 사용되므로 내부용/개인용으로만 배포
-- 외부 공개 시 백엔드 프록시 구현 필요
+- **필수**: [Anthropic Console](https://console.anthropic.com/settings/limits)에서 **Spend Limit** 설정
+- 외부 공개 시 백엔드 프록시 구현 권장 (장기 계획)
+
+## GitHub Pages 배포
+
+### 사전 준비
+
+1. **Anthropic Console에서 Spend Limit 설정** (필수)
+   - [Settings → Limits](https://console.anthropic.com/settings/limits)에서 월간 지출 한도 설정
+   - 권장: $10~20/월
+
+2. **GitHub Repository Secrets 설정**
+   - Repository → Settings → Secrets and variables → Actions
+   - `ANTHROPIC_API_KEY` secret 추가
+
+### 배포 방법
+
+1. **GitHub Pages 활성화**
+   - Repository → Settings → Pages
+   - Source: "GitHub Actions" 선택
+
+2. **자동 배포**
+   - `main` 브랜치에 push하면 자동으로 GitHub Pages에 배포
+   - `.github/workflows/deploy.yml` 참조
+
+### 배포 후 확인
+
+- `https://<username>.github.io/<repo-name>/` 에서 접속 확인
+- 보안 배너가 표시되는지 확인
+- API 호출이 정상 작동하는지 테스트
+
+## 프로젝트 구조
+
+```
+/
+├── index.html              # 메인 HTML (SPA 엔트리포인트)
+├── css/
+│   └── style.css           # Slack 브랜드 컬러 기반 스타일
+├── js/
+│   ├── env.js              # API 키 설정 (gitignored)
+│   ├── env.example.js      # env.js 템플릿
+│   ├── config.js           # 앱 설정 (모델 선택 등)
+│   ├── api.js              # Claude API 통신 모듈
+│   └── app.js              # 메인 앱 로직, 이벤트 핸들러
+├── prompts/
+│   ├── rulebook.md         # 변환 규칙 및 예시 (시스템 프롬프트)
+│   └── reference.md        # 실제 공지 샘플 (참고용, API 미사용)
+└── .github/
+    └── workflows/
+        ├── deploy.yml      # GitHub Pages 자동 배포
+        └── claude.yml      # Claude Code Action
+```
 
 <!-- MANUAL: 추가 메모는 아래에 작성 -->

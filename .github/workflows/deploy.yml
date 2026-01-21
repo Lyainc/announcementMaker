@@ -25,17 +25,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create env.js from secret
+      - name: Prepare deployment files
         run: |
-          echo "const ENV = { ANTHROPIC_API_KEY: '${{ secrets.ANTHROPIC_API_KEY }}' };" > js/env.js
+          mkdir -p _site/js _site/css _site/prompts
+          cp index.html _site/
+          cp css/style.css _site/css/
+          cp js/api.js js/app.js js/config.js js/env.example.js _site/js/
+          cp prompts/rulebook.md _site/prompts/
+          # Create env.js with API key from secret
+          echo "const ENV = { ANTHROPIC_API_KEY: '${{ secrets.ANTHROPIC_API_KEY }}' };" > _site/js/env.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: '_site'
 
       - name: Deploy to GitHub Pages
         id: deployment

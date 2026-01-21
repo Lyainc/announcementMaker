@@ -19,7 +19,6 @@ const App = {
     init() {
         this.cacheElements();
         this.bindEvents();
-        this.loadSavedSettings();
         this.updateCharCount('input');
     },
 
@@ -28,23 +27,17 @@ const App = {
      */
     cacheElements() {
         this.elements = {
-            // 설정 관련
-            settingsToggle: document.getElementById('settings-toggle'),
-            settingsPanel: document.getElementById('settings-panel'),
-            apiKeyInput: document.getElementById('api-key'),
-            modelSelect: document.getElementById('model-select'),
-            saveSettings: document.getElementById('save-settings'),
-            cancelSettings: document.getElementById('cancel-settings'),
-
             // 에디터 관련
             inputText: document.getElementById('input-text'),
             outputText: document.getElementById('output-text'),
+            additionalInstructions: document.getElementById('additional-instructions'),
             inputCount: document.getElementById('input-count'),
             outputCount: document.getElementById('output-count'),
 
             // 버튼 관련
             convertBtn: document.getElementById('convert-btn'),
             copyBtn: document.getElementById('copy-btn'),
+            inlineCopyBtn: document.getElementById('inline-copy-btn'),
 
             // 메시지
             errorMessage: document.getElementById('error-message')
@@ -55,11 +48,6 @@ const App = {
      * 이벤트 바인딩
      */
     bindEvents() {
-        // 설정 토글
-        this.elements.settingsToggle.addEventListener('click', () => this.toggleSettings());
-        this.elements.saveSettings.addEventListener('click', () => this.saveSettings());
-        this.elements.cancelSettings.addEventListener('click', () => this.toggleSettings(false));
-
         // 입력 관련
         this.elements.inputText.addEventListener('input', () => this.updateCharCount('input'));
         this.elements.outputText.addEventListener('input', () => this.updateCharCount('output'));
@@ -67,50 +55,10 @@ const App = {
         // 변환/복사 버튼
         this.elements.convertBtn.addEventListener('click', () => this.convert());
         this.elements.copyBtn.addEventListener('click', () => this.copyOutput());
+        this.elements.inlineCopyBtn.addEventListener('click', () => this.copyOutputInline());
 
         // 키보드 단축키
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
-    },
-
-    /**
-     * 저장된 설정 불러오기
-     */
-    loadSavedSettings() {
-        const config = Config.load();
-        this.elements.apiKeyInput.value = config.apiKey;
-        this.elements.modelSelect.value = config.model;
-    },
-
-    /**
-     * 설정 패널 토글
-     */
-    toggleSettings(show = null) {
-        const isHidden = this.elements.settingsPanel.classList.contains('hidden');
-        const shouldShow = show !== null ? show : isHidden;
-
-        if (shouldShow) {
-            this.loadSavedSettings();
-            this.elements.settingsPanel.classList.remove('hidden');
-        } else {
-            this.elements.settingsPanel.classList.add('hidden');
-        }
-    },
-
-    /**
-     * 설정 저장
-     */
-    saveSettings() {
-        const apiKey = this.elements.apiKeyInput.value.trim();
-        const model = this.elements.modelSelect.value;
-
-        if (apiKey && !Config.isValidApiKey(apiKey)) {
-            this.showError('유효하지 않은 API 키 형식입니다. sk-ant-로 시작하는 키를 입력해주세요.');
-            return;
-        }
-
-        Config.save({ apiKey, model });
-        this.toggleSettings(false);
-        this.hideError();
     },
 
     /**
@@ -130,6 +78,7 @@ const App = {
         if (this.state.isConverting) return;
 
         const inputText = this.elements.inputText.value.trim();
+        const additionalInstructions = this.elements.additionalInstructions.value.trim();
 
         if (!inputText) {
             this.showError('변환할 내용을 입력해주세요.');
@@ -140,11 +89,12 @@ const App = {
         this.hideError();
 
         try {
-            const result = await API.convertAnnouncement(inputText);
+            const result = await API.convertAnnouncement(inputText, additionalInstructions);
             this.elements.outputText.value = result;
             this.updateCharCount('output');
             this.state.hasOutput = true;
             this.elements.copyBtn.disabled = false;
+            this.elements.inlineCopyBtn.disabled = false;
         } catch (error) {
             this.showError(error.message);
             console.error('Conversion error:', error);
@@ -201,6 +151,29 @@ const App = {
     },
 
     /**
+     * 인라인 복사 버튼 (패널 헤더)
+     */
+    async copyOutputInline() {
+        const output = this.elements.outputText.value;
+
+        if (!output) return;
+
+        try {
+            await navigator.clipboard.writeText(output);
+
+            // 복사됨 피드백
+            this.elements.inlineCopyBtn.classList.add('copied');
+
+            setTimeout(() => {
+                this.elements.inlineCopyBtn.classList.remove('copied');
+            }, 2000);
+        } catch (error) {
+            this.showError('클립보드에 복사할 수 없습니다.');
+            console.error('Copy error:', error);
+        }
+    },
+
+    /**
      * 에러 메시지 표시
      */
     showError(message) {
@@ -231,11 +204,6 @@ const App = {
                 e.preventDefault();
                 this.copyOutput();
             }
-        }
-
-        // Escape: 설정 패널 닫기
-        if (e.key === 'Escape') {
-            this.toggleSettings(false);
         }
     }
 };

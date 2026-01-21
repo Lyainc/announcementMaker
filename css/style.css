@@ -264,6 +264,106 @@ header h1 {
     background: var(--bg-secondary);
 }
 
+/* Additional Input */
+.additional-input {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+}
+
+.additional-input label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.optional-badge {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--text-muted);
+    background: var(--bg-primary);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.additional-input input {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: border-color var(--transition);
+}
+
+.additional-input input:focus {
+    outline: none;
+    border-color: var(--slack-aubergine);
+}
+
+.additional-input input::placeholder {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* Panel Header Right */
+.panel-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Inline Copy Button */
+.btn-copy-inline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all var(--transition);
+}
+
+.btn-copy-inline:hover:not(:disabled) {
+    background: var(--slack-green);
+    border-color: var(--slack-green);
+    color: white;
+}
+
+.btn-copy-inline:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-copy-inline.copied {
+    background: var(--slack-green);
+    border-color: var(--slack-green);
+    color: white;
+}
+
+.btn-copy-inline .check-icon {
+    display: none;
+}
+
+.btn-copy-inline.copied .copy-icon {
+    display: none;
+}
+
+.btn-copy-inline.copied .check-icon {
+    display: block;
+}
+
 /* Action Bar */
 .action-bar {
     display: flex;

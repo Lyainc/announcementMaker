@@ -8,60 +8,32 @@ const API = {
 
     // 프롬프트 파일 캐시
     _promptCache: {
-        rulebook: null,
-        reference: null
+        rulebook: null
     },
 
     /**
      * 프롬프트 파일 로드
      */
     async loadPrompts() {
-        if (!this._promptCache.rulebook || !this._promptCache.reference) {
-            const [rulebookRes, referenceRes] = await Promise.all([
-                fetch('prompts/rulebook.md'),
-                fetch('prompts/reference.md')
-            ]);
+        if (!this._promptCache.rulebook) {
+            const rulebookRes = await fetch('prompts/rulebook.md');
 
-            if (!rulebookRes.ok || !referenceRes.ok) {
+            if (!rulebookRes.ok) {
                 throw new Error('프롬프트 파일을 불러올 수 없습니다.');
             }
 
             this._promptCache.rulebook = await rulebookRes.text();
-            this._promptCache.reference = await referenceRes.text();
         }
 
         return this._promptCache;
     },
 
     /**
-     * 시스템 프롬프트 생성
-     */
-    buildSystemPrompt(rulebook, reference) {
-        return `${rulebook}
-
----
-
-# 참고: 기존 공지 샘플
-
-아래는 실제 사용된 공지 샘플입니다. 톤앤매너와 형식을 참고하세요.
-
-${reference}`;
-    },
-
-    /**
      * 공지 변환 요청
      */
-    async convertAnnouncement(inputText) {
+    async convertAnnouncement(inputText, additionalInstructions = '') {
         const apiKey = Config.getApiKey();
         const model = Config.getModel();
-
-        if (!apiKey) {
-            throw new Error('API 키가 설정되지 않았습니다. 설정 버튼을 클릭하여 API 키를 입력해주세요.');
-        }
-
-        if (!Config.isValidApiKey(apiKey)) {
-            throw new Error('유효하지 않은 API 키 형식입니다.');
-        }
 
         if (!inputText || !inputText.trim()) {
             throw new Error('변환할 내용을 입력해주세요.');
@@ -69,7 +41,7 @@ ${reference}`;
 
         // 프롬프트 로드
         const prompts = await this.loadPrompts();
-        const systemPrompt = this.buildSystemPrompt(prompts.rulebook, prompts.reference);
+        const systemPrompt = prompts.rulebook;
 
         // API 요청
         const response = await fetch(this.ENDPOINT, {
@@ -78,16 +50,23 @@ ${reference}`;
                 'Content-Type': 'application/json',
                 'x-api-key': apiKey,
                 'anthropic-version': '2023-06-01',
+                'anthropic-beta': 'prompt-caching-2024-07-31',
                 'anthropic-dangerous-direct-browser-access': 'true'
             },
             body: JSON.stringify({
                 model: model,
                 max_tokens: 4096,
-                system: systemPrompt,
+                system: [
+                    {
+                        type: 'text',
+                        text: systemPrompt,
+                        cache_control: { type: 'ephemeral' }
+                    }
+                ],
                 messages: [
                     {
                         role: 'user',
-                        content: `다음 공지를 Slack 전사 공지 채널에 적합한 형태로 변환해주세요. 변환된 공지만 출력하고, 설명이나 부연은 포함하지 마세요.
+                        content: `다음 공지를 Slack 전사 공지 채널에 적합한 형태로 변환해주세요. 변환된 공지만 출력하고, 설명이나 부연은 포함하지 마세요.${additionalInstructions ? `\n\n[추가 요청사항]\n${additionalInstructions}` : ''}
 
 ---
 
@@ -102,7 +81,7 @@ ${inputText}`
             const errorMessage = errorData.error?.message || response.statusText;
 
             if (response.status === 401) {
-                throw new Error('API 키가 유효하지 않습니다. 설정에서 올바른 API 키를 입력해주세요.');
+                throw new Error('API 키가 유효하지 않습니다. 관리자에게 문의해주세요.');
             } else if (response.status === 429) {
                 throw new Error('요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.');
             } else if (response.status === 400) {

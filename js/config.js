@@ -1,73 +1,23 @@
 /**
  * Config Module
- * localStorage 기반 API 키 및 설정 관리
+ * API 설정 관리 (env.js에서 값 로드)
  */
 
 const Config = {
-    STORAGE_KEY: 'announcement_maker_config',
-
-    DEFAULT_CONFIG: {
-        apiKey: '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',
-        model: 'claude-sonnet-4-5-20250929'
-    },
-
-    /**
-     * 설정 불러오기
-     */
-    load() {
-        try {
-            const stored = localStorage.getItem(this.STORAGE_KEY);
-            if (stored) {
-                return { ...this.DEFAULT_CONFIG, ...JSON.parse(stored) };
-            }
-        } catch (e) {
-            console.error('Failed to load config:', e);
-        }
-        return { ...this.DEFAULT_CONFIG };
-    },
-
-    /**
-     * 설정 저장
-     */
-    save(config) {
-        try {
-            const toSave = {
-                apiKey: config.apiKey || '',
-                model: config.model || this.DEFAULT_CONFIG.model
-            };
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(toSave));
-            return true;
-        } catch (e) {
-            console.error('Failed to save config:', e);
-            return false;
-        }
-    },
+    API_KEY: ENV.ANTHROPIC_API_KEY,
+    MODEL: 'claude-sonnet-4-5-20250929',
 
     /**
      * API 키 가져오기
      */
     getApiKey() {
-        return this.load().apiKey;
+        return this.API_KEY;
     },
 
     /**
      * 모델 가져오기
      */
     getModel() {
-        return this.load().model;
-    },
-
-    /**
-     * API 키 유효성 검사 (기본 형식 체크)
-     */
-    isValidApiKey(key) {
-        return key && key.startsWith('sk-ant-') && key.length > 20;
-    },
-
-    /**
-     * 설정 초기화
-     */
-    clear() {
-        localStorage.removeItem(this.STORAGE_KEY);
+        return this.MODEL;
     }
 };

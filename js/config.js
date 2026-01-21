@@ -1,10 +1,10 @@
 /**
  * Config Module
- * API 설정 관리 (하드코딩된 값 사용)
+ * API 설정 관리 (env.js에서 값 로드)
  */
 
 const Config = {
-    API_KEY: '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',
+    API_KEY: ENV.ANTHROPIC_API_KEY,
     MODEL: 'claude-sonnet-4-5-20250929',
 
     /**

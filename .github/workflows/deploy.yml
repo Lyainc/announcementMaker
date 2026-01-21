@@ -31,7 +31,7 @@ jobs:
           cp index.html _site/
           cp css/style.css _site/css/
           cp js/api.js js/app.js js/config.js js/env.example.js _site/js/
-          cp prompts/rulebook.md _site/prompts/
+          cp prompts/*.md _site/prompts/
           # Create env.js with API key from secret
           echo "const ENV = { ANTHROPIC_API_KEY: '${{ secrets.ANTHROPIC_API_KEY }}' };" > _site/js/env.js
 

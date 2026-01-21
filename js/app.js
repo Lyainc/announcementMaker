@@ -10,7 +10,8 @@ const App = {
     // 상태
     state: {
         isConverting: false,
-        hasOutput: false
+        hasOutput: false,
+        debounceTimer: null
     },
 
     /**
@@ -91,9 +92,13 @@ const App = {
         if (!indicator) return;
 
         const modeText = mode === 'generate' ? '생성' : '변환';
+        const modeTooltip = mode === 'generate'
+            ? '짧은 입력 → 공지 생성 (200자 미만, 4줄 미만)'
+            : '긴 입력 → 공지 변환 (200자 이상, 4줄 이상, 또는 구조 패턴)';
 
-        // 텍스트 업데이트
+        // 텍스트 및 툴팁 업데이트
         indicator.textContent = modeText;
+        indicator.setAttribute('title', modeTooltip);
 
         // 클래스 토글 (스타일링용)
         indicator.classList.remove('generate', 'convert');
@@ -108,7 +113,10 @@ const App = {
      */
     bindEvents() {
         // 입력 관련
-        this.elements.inputText.addEventListener('input', () => this.updateCharCount('input'));
+        this.elements.inputText.addEventListener('input', () => {
+            this.updateCharCount('input');
+            this.debouncedModeDetect();
+        });
         this.elements.outputText.addEventListener('input', () => this.updateCharCount('output'));
 
         // 변환/복사 버튼
@@ -118,6 +126,22 @@ const App = {
 
         // 키보드 단축키
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+    },
+
+    /**
+     * 입력 시 모드 감지 (debounce)
+     */
+    debouncedModeDetect() {
+        clearTimeout(this.state.debounceTimer);
+        this.state.debounceTimer = setTimeout(() => {
+            const text = this.elements.inputText.value;
+            if (text.trim()) {
+                const mode = this.detectMode(text);
+                this.showCurrentMode(mode);
+            } else if (this.elements.modeIndicator) {
+                this.elements.modeIndicator.classList.add('hidden');
+            }
+        }, 300);
     },
 
     /**

@@ -40,8 +40,67 @@ const App = {
             inlineCopyBtn: document.getElementById('inline-copy-btn'),
 
             // 메시지
-            errorMessage: document.getElementById('error-message')
+            errorMessage: document.getElementById('error-message'),
+
+            // 모드 표시
+            modeIndicator: document.getElementById('mode-indicator')
         };
+    },
+
+    /**
+     * 입력 텍스트 분석하여 모드 판별
+     * @param {string} text - 입력 텍스트
+     * @returns {'convert' | 'generate'}
+     */
+    detectMode(text) {
+        const trimmed = text.trim();
+
+        // 빈 텍스트는 generate
+        if (!trimmed) return 'generate';
+
+        // 구조 마커 (완성된 공지의 특징)
+        const structureMarkers = [
+            /안녕하세요/,
+            /감사합니다/,
+            /문의.*주시/,
+            /@channel|@here/,
+            /\[.+\].*\n/,      // 섹션 헤더 + 줄바꿈
+            /<.+>.*@/,          // 제목 + 멘션
+        ];
+
+        const markerCount = structureMarkers.filter(m => m.test(trimmed)).length;
+        const lineCount = (trimmed.match(/\n/g) || []).length + 1;
+
+        // 변환 모드 조건:
+        // 1. 200자 이상
+        // 2. 4줄 이상
+        // 3. 구조 마커 2개 이상
+        if (trimmed.length >= 200 || lineCount >= 4 || markerCount >= 2) {
+            return 'convert';
+        }
+
+        return 'generate';
+    },
+
+    /**
+     * 현재 모드를 UI에 표시
+     * @param {'convert' | 'generate'} mode
+     */
+    showCurrentMode(mode) {
+        const indicator = this.elements.modeIndicator;
+        if (!indicator) return;
+
+        const modeText = mode === 'generate' ? '생성' : '변환';
+
+        // 텍스트 업데이트
+        indicator.textContent = modeText;
+
+        // 클래스 토글 (스타일링용)
+        indicator.classList.remove('generate', 'convert');
+        indicator.classList.add(mode);
+
+        // 표시
+        indicator.classList.remove('hidden');
     },
 
     /**
@@ -72,7 +131,7 @@ const App = {
     },
 
     /**
-     * 변환 실행
+     * 변환/생성 실행
      */
     async convert() {
         if (this.state.isConverting) return;
@@ -81,15 +140,19 @@ const App = {
         const additionalInstructions = this.elements.additionalInstructions.value.trim();
 
         if (!inputText) {
-            this.showError('변환할 내용을 입력해주세요.');
+            this.showError('내용을 입력해주세요.');
             return;
         }
+
+        // 모드 판별
+        const mode = this.detectMode(inputText);
+        this.showCurrentMode(mode);
 
         this.setConvertingState(true);
         this.hideError();
 
         try {
-            const result = await API.convertAnnouncement(inputText, additionalInstructions);
+            const result = await API.processAnnouncement(inputText, mode, additionalInstructions);
             this.elements.outputText.value = result;
             this.updateCharCount('output');
             this.state.hasOutput = true;
@@ -97,7 +160,7 @@ const App = {
             this.elements.inlineCopyBtn.disabled = false;
         } catch (error) {
             this.showError(error.message);
-            console.error('Conversion error:', error);
+            console.error('Processing error:', error);
         } finally {
             this.setConvertingState(false);
         }

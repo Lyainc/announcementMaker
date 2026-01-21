@@ -501,6 +501,26 @@ footer {
     font-size: 13px;
 }
 
+/* Mode Indicator */
+.mode-indicator {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.mode-indicator.generate {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.mode-indicator.convert {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
 /* Utility */
 .hidden {
     display: none !important;

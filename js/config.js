@@ -7,8 +7,8 @@ const Config = {
     STORAGE_KEY: 'announcement_maker_config',
 
     DEFAULT_CONFIG: {
-        apiKey: '',
-        model: 'claude-sonnet-4-20250514'
+        apiKey: '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',
+        model: 'claude-sonnet-4-5-20250929'
     },
 
     /**

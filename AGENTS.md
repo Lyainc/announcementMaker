@@ -10,7 +10,7 @@
 
 | File | Description |
 |------|-------------|
-| `index.html` | SPA 엔트리포인트, 보안 배너 포함 |
+| `index.html` | SPA 엔트리포인트 |
 | `CLAUDE.md` | 프로젝트 상세 문서 (배포 가이드 포함) |
 | `.gitignore` | env.js 등 민감 파일 제외 설정 |
 
@@ -59,9 +59,10 @@ npx serve .
 ### Common Patterns
 
 - **모듈 구조**: 전역 객체 패턴 (`API`, `App`, `Config`)
-- **상태 관리**: `App.state` 객체에서 관리
+- **상태 관리**: `App.state` 객체에서 관리 (debounceTimer 포함)
 - **에러 처리**: `App.showError()` 메서드 사용
 - **DOM 캐싱**: `App.elements`에서 참조
+- **실시간 모드 감지**: 입력 시 300ms debounce로 생성/변환 모드 자동 표시
 
 ## Dependencies
 

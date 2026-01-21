@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slack 공지 변환기</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Slack 공지 변환기</h1>
+            <p class="subtitle">인사팀 정책/안내사항을 Slack 전사 공지용으로 변환</p>
+            <button id="settings-toggle" class="btn-icon" title="설정">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+        </header>
+
+        <!-- 설정 패널 -->
+        <div id="settings-panel" class="settings-panel hidden">
+            <div class="settings-content">
+                <h3>API 설정</h3>
+                <div class="form-group">
+                    <label for="api-key">Anthropic API Key</label>
+                    <input type="password" id="api-key" placeholder="sk-ant-api03-...">
+                </div>
+                <div class="form-group">
+                    <label for="model-select">모델 선택</label>
+                    <select id="model-select">
+                        <option value="claude-sonnet-4-20250514" selected>Claude Sonnet 4 (권장)</option>
+                        <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (빠름)</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button id="save-settings" class="btn btn-primary">저장</button>
+                    <button id="cancel-settings" class="btn btn-secondary">취소</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <main>
+            <div class="editor-section">
+                <div class="panel input-panel">
+                    <div class="panel-header">
+                        <h2>원본 입력</h2>
+                        <span class="char-count" id="input-count">0자</span>
+                    </div>
+                    <textarea
+                        id="input-text"
+                        placeholder="인사팀에서 작성한 원본 공지 내용을 붙여넣으세요..."
+                    ></textarea>
+                </div>
+
+                <div class="panel output-panel">
+                    <div class="panel-header">
+                        <h2>변환 결과</h2>
+                        <span class="char-count" id="output-count">0자</span>
+                    </div>
+                    <textarea
+                        id="output-text"
+                        placeholder="변환된 Slack 공지가 여기에 표시됩니다..."
+                        readonly
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <button id="convert-btn" class="btn btn-primary btn-large">
+                    <span class="btn-text">변환하기</span>
+                    <span class="btn-loading hidden">
+                        <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
+                        </svg>
+                        변환 중...
+                    </span>
+                </button>
+                <button id="copy-btn" class="btn btn-secondary btn-large" disabled>
+                    <span class="btn-text">복사하기</span>
+                    <span class="btn-copied hidden">복사됨!</span>
+                </button>
+            </div>
+
+            <div id="error-message" class="error-message hidden"></div>
+        </main>
+
+        <footer>
+            <p>Claude API를 사용하여 공지를 Slack 톤앤매너에 맞게 변환합니다.</p>
+        </footer>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
